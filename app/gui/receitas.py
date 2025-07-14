@@ -1,40 +1,63 @@
-import tkinter as tk, tkinter.ttk as ttk
-from tkinter import messagebox
+import tkinter as tk
+from tkinter import ttk, messagebox
 from datetime import date
 from app.banco import conectar
 
 def tela_receitas():
-    win = tk.Toplevel(); win.title("Receitas"); win.geometry("500x380")
-    tk.Label(win,text="Lançar Receita",font=("Arial",14)).pack(pady=8)
-    frm = tk.Frame(win); frm.pack(pady=6)
+    janela = tk.Toplevel()
+    janela.title("Lançar Receita")
+    janela.geometry("400x320")
 
-    tk.Label(frm,text="Data:").grid(row=0,column=0,sticky="e")
-    dt = tk.Entry(frm); dt.insert(0,date.today().strftime("%Y-%m-%d")); dt.grid(row=0,column=1)
+    frame = tk.Frame(janela)
+    frame.pack(pady=10)
 
-    tk.Label(frm,text="Valor (R$):").grid(row=1,column=0,sticky="e")
-    val = tk.Entry(frm); val.grid(row=1,column=1)
+    #Campos
+    tk.Label(frame, text="Data:").grid(row=0, column=0, sticky="e")
+    entry_data = tk.Entry(frame)
+    entry_data.insert(0, date.today().strftime("%Y-%m-%d"))
+    entry_data.grid(row=0, column=1)
 
-    tk.Label(frm,text="Categoria:").grid(row=2,column=0,sticky="e")
-    cat = ttk.Combobox(frm,state="readonly"); cat.grid(row=2,column=1)
+    tk.Label(frame, text="Valor (R$):").grid(row=1, column=0, sticky="e")
+    entry_valor = tk.Entry(frame)
+    entry_valor.grid(row=1, column=1)
 
-    tk.Label(frm,text="Descrição:").grid(row=3,column=0,sticky="e")
-    desc = tk.Entry(frm); desc.grid(row=3,column=1)
+    tk.Label(frame, text="Categoria:").grid(row=2, column=0, sticky="e")
+    combo_categoria = ttk.Combobox(frame, state="readonly")
+    combo_categoria.grid(row=2, column=1)
 
-    cur = conectar().cursor(); cur.execute("SELECT id,nome FROM categorias WHERE tipo='R'")
-    mapa = {nome:str(cid) for cid,nome in cur.fetchall()}
-    cat["values"] = list(mapa.keys())
+    tk.Label(frame, text="Descrição:").grid(row=3, column=0, sticky="e")
+    entry_desc = tk.Entry(frame)
+    entry_desc.grid(row=3, column=1)
+
+    #Categorias do tipo receita
+    conn = conectar()
+    cur = conn.cursor()
+    cur.execute("SELECT id, nome FROM categorias WHERE tipo = 'R'")
+    categorias = cur.fetchall()
+    conn.close()
+
+    mapa = {nome: cid for cid, nome in categorias}
+    combo_categoria["values"] = list(mapa.keys())
 
     def salvar():
         try:
-            valor = float(val.get().replace(",","."))
-            cat_id = mapa.get(cat.get())
-            if not cat_id: raise ValueError("Categoria inválida")
-            con = conectar(); c = con.cursor()
-            c.execute("""INSERT INTO lancamentos(data,valor,tipo,categoria_id,descricao,criado_por)
-                         VALUES (?,?,?,?,?,1)""",(dt.get(),valor,'R',cat_id,desc.get()))
-            con.commit(); con.close()
-            messagebox.showinfo("OK","Receita salva."); win.destroy()
-        except Exception as e:
-            messagebox.showerror("Erro",str(e))
+            valor = float(entry_valor.get().replace(",", "."))
+            cat_id = mapa.get(combo_categoria.get())
+            if not cat_id:
+                raise ValueError("Selecione uma categoria válida.")
 
-    tk.Button(win,text="Salvar Receita",command=salvar,bg="#198754",fg="white").pack(pady=10)
+            conn = conectar()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO lancamentos (data, valor, tipo, categoria_id, descricao, criado_por)
+                VALUES (?, ?, 'R', ?, ?, 1)
+            """, (entry_data.get(), valor, cat_id, entry_desc.get()))
+            conn.commit()
+            conn.close()
+
+            messagebox.showinfo("Sucesso", "Receita registrada com sucesso.")
+            janela.destroy()
+        except Exception as e:
+            messagebox.showerror("Erro", str(e))
+
+    tk.Button(janela, text="Salvar", command=salvar, bg="#198754", fg="white").pack(pady=10)

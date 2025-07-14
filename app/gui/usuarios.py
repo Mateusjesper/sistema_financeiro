@@ -47,7 +47,7 @@ def tela_usuarios():
         tk.Label(ed, text="Email").grid(row=1, column=0)
         email = tk.Entry(ed); email.insert(0, email_antigo); email.grid(row=1, column=1)
 
-        tk.Label(ed, text="Senha (nova ou deixe em branco)").grid(row=2, column=0)
+        tk.Label(ed, text="Senha (nova)").grid(row=2, column=0)
         senha = tk.Entry(ed); senha.grid(row=2, column=1)
 
         tk.Label(ed, text="Perfil").grid(row=3, column=0)
@@ -101,6 +101,7 @@ def tela_usuarios():
 
         tk.Button(ed, text="Salvar", command=salvar_edicao, bg="#0d6efd", fg="white").grid(row=5, column=1, pady=10)
 
+    #Botões
     tk.Button(win, text="Cadastrar Novo", command=lambda: editar(), bg="#198754", fg="white").pack(pady=5)
     tk.Button(win, text="Editar Selecionado", command=editar_usuario, bg="#ffc107").pack(pady=5)
     carregar()

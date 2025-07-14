@@ -14,7 +14,7 @@ def tela_orcamento(usuario_id):
     frame = tk.Frame(win)
     frame.pack(pady=10)
 
-    # Entradas de mês e ano
+    # Entradas
     tk.Label(frame, text="Mês (1-12):").grid(row=0, column=0, sticky="e")
     mes_entry = tk.Entry(frame, width=5)
     mes_entry.insert(0, datetime.now().month)
@@ -63,12 +63,12 @@ def tela_orcamento(usuario_id):
             conn = conectar()
             cur = conn.cursor()
 
-            # Recupera valor orçado
+            #Valor orçado
             cur.execute("SELECT valor FROM orcamentos WHERE mes=? AND ano=?", (mes, ano))
             row = cur.fetchone()
             orcado = row[0] if row else 0
 
-            # Recupera total de despesas
+            #Total de despesas
             cur.execute("""
                 SELECT SUM(valor) FROM lancamentos
                 WHERE tipo='D' AND strftime('%m', data)=? AND strftime('%Y', data)=?

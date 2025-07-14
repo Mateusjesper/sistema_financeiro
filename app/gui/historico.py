@@ -1,7 +1,7 @@
 from app.banco import conectar
 from datetime import datetime
 
-
+#Cria a tabela de histórico, se não existir
 def criar_tabela_historico():
     conn = conectar()
     cur = conn.cursor()
@@ -17,7 +17,7 @@ def criar_tabela_historico():
     conn.commit()
     conn.close()
 
-
+#Registra uma nova ação no histórico
 def registrar_acao(acao: str, autor_id: int):
     conn = conectar()
     cur = conn.cursor()
@@ -28,7 +28,7 @@ def registrar_acao(acao: str, autor_id: int):
     conn.commit()
     conn.close()
 
-
+#Retorna as últimas ações registradas
 def listar_historico():
     conn = conectar()
     cur = conn.cursor()

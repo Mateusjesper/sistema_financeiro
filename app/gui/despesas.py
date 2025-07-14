@@ -5,13 +5,13 @@ from app.banco import conectar
 
 def tela_despesas():
     janela = tk.Toplevel()
-    janela.title("Despesas")
-    janela.geometry("500x380")
+    janela.title("Lançar Despesa")
+    janela.geometry("400x320")
 
-    tk.Label(janela, text="Lançar Despesa", font=("Arial", 14)).pack(pady=8)
     frame = tk.Frame(janela)
-    frame.pack(pady=6)
+    frame.pack(pady=10)
 
+    #Campos do formulário
     tk.Label(frame, text="Data:").grid(row=0, column=0, sticky="e")
     entry_data = tk.Entry(frame)
     entry_data.insert(0, date.today().strftime("%Y-%m-%d"))
@@ -29,27 +29,36 @@ def tela_despesas():
     entry_desc = tk.Entry(frame)
     entry_desc.grid(row=3, column=1)
 
-    cur = conectar().cursor()
+    #Carregar categorias de despesas
+    conn = conectar()
+    cur = conn.cursor()
     cur.execute("SELECT id, nome FROM categorias WHERE tipo = 'D'")
-    mapa = {nome: str(cid) for cid, nome in cur.fetchall()}
+    categorias = cur.fetchall()
+    conn.close()
+
+    mapa = {nome: cid for cid, nome in categorias}
     combo_categoria["values"] = list(mapa.keys())
 
+    #Função para salvar a despesa
     def salvar():
         try:
             valor = float(entry_valor.get().replace(",", "."))
             cat_id = mapa.get(combo_categoria.get())
             if not cat_id:
-                raise ValueError("Categoria inválida")
-            con = conectar()
-            cur = con.cursor()
+                raise ValueError("Selecione uma categoria válida.")
+
+            conn = conectar()
+            cur = conn.cursor()
             cur.execute("""
                 INSERT INTO lancamentos (data, valor, tipo, categoria_id, descricao, criado_por)
                 VALUES (?, ?, 'D', ?, ?, 1)
             """, (entry_data.get(), valor, cat_id, entry_desc.get()))
-            con.commit(); con.close()
+            conn.commit()
+            conn.close()
+
             messagebox.showinfo("Sucesso", "Despesa registrada com sucesso.")
             janela.destroy()
         except Exception as e:
             messagebox.showerror("Erro", str(e))
 
-    tk.Button(janela, text="Salvar Despesa", command=salvar, bg="#dc3545", fg="white").pack(pady=10)
+    tk.Button(janela, text="Salvar", command=salvar, bg="#dc3545", fg="white").pack(pady=10)
