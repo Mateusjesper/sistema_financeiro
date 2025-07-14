@@ -1,13 +1,20 @@
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from datetime import datetime
+import os, sys
+
 from app.banco import conectar
 from app.gui.dashboard import abrir_dashboard
-from datetime import datetime
-import os
-import sys
 
 usuario_logado = {}
+
+# 🔧 Função para encontrar o caminho do recurso (imagem, ícone, etc.)
+def recurso_caminho(relativo):
+    """Retorna o caminho correto mesmo dentro de um .exe gerado com PyInstaller"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relativo)
+    return os.path.join(os.path.abspath("."), relativo)
 
 def iniciar_login():
     login_win = tk.Tk()
@@ -44,26 +51,19 @@ def iniciar_login():
             conn.close()
 
     def recuperar_senha():
-        messagebox.showinfo("Recuperar Senha", "Por favor, entre em contato com o administrador para redefinir a senha.")
+        messagebox.showinfo("Recuperar Senha", "Entre em contato com o administrador.")
 
-    # Carregar imagem da logo com suporte a execução via .exe
+    # ✅ Carregar imagem com caminho compatível com .exe
     try:
-        if hasattr(sys, '_MEIPASS'):
-            base_path = sys._MEIPASS
-        else:
-            base_path = os.path.abspath(".")
-
-        img_path = os.path.join(base_path, "imagens", "logo.png")
+        img_path = recurso_caminho("app/gui/imagens/logo.png")
         img = Image.open(img_path)
         img = img.resize((100, 100))
         img_tk = ImageTk.PhotoImage(img)
-
         logo_label = tk.Label(login_win, image=img_tk, bg="#f4f4f4")
         logo_label.image = img_tk
         logo_label.pack(pady=(20, 5))
-
     except Exception as e:
-        print(f"Erro ao carregar a logo: {e}")
+        print(f"Erro ao carregar imagem: {e}")
 
     # Campos de login
     form_frame = tk.Frame(login_win, bg="#f4f4f4")
